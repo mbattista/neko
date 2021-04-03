@@ -7,7 +7,7 @@ on:
 
 jobs:
     release:
-        runs-on: ubuntu-latest
+        runs-on: self-hosted
         steps:
         -
             name: Checkout
@@ -20,35 +20,26 @@ jobs:
             run: |
                 echo "${DOCKER_PASSWORD}" | docker login --username ${DOCKER_USERNAME} --password-stdin
         -
-            name: Set up Docker Buildx
-            id: buildx
-            uses: docker/setup-buildx-action@v1
-            with:
-                version: latest
-        -
             name: Build base dockerfile (with push)
             run: |
-                docker buildx build \
-                --platform=linux/arm/v7 \
-                --output "type=image,push=true" \
+                docker build \
                 --file .m1k1o/base/Dockerfile.arm . \
-                --tag mbattista/neko:arm-base
+                --tag mbattista/neko:arm-base; \
+                docker push mbattista/neko:arm-base
         -
             name: Build chromium dockerfile (with push)
             run: |
-                docker buildx build \
-                --platform=linux/arm/v7 \
-                --output "type=image,push=true" \
+                docker build \
                 --file .m1k1o/chromium/Dockerfile.arm . \
-                --tag mbattista/neko:arm-chromium
+                --tag mbattista/neko:arm-chromium; \
+                docker push mbattista/neko:arm-chromium
         -
             name: Build firefox dockerfile (with push)
             run: |
-                docker buildx build \
-                --platform=linux/arm/v7 \
-                --output "type=image,push=true" \
+                docker build \
                 --file .m1k1o/firefox/Dockerfile.arm . \
-                --tag mbattista/neko:arm-firefox
+                --tag mbattista/neko:arm-firefox; \
+                docker push mbattista/neko:arm-firefox
 
 
 

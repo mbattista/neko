@@ -24,6 +24,7 @@ jobs:
             run: |
                 docker build \
                 --file .m1k1o/base/Dockerfile.arm . \
+                --platform "linux/arm/v7"
                 --tag mbattista/neko:arm-base; \
                 docker push mbattista/neko:arm-base
         -

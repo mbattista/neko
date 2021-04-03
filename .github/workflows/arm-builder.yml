@@ -22,28 +22,22 @@ jobs:
         -
             name: Build base dockerfile (with push)
             run: |
-                docker build \
-                --file .m1k1o/base/Dockerfile.arm .m1k1o/base \
-                --platform "linux/arm/v7" \
-                --tag mbattista/neko:arm-base; \
+                cd .m1k1o; \
+                sed -i 's/m1k1o/mbattista/g' .env.default
+                ./build arm-base
                 docker push mbattista/neko:arm-base
         -
             name: Build chromium dockerfile (with push)
             run: |
-                docker build \
-                --file .m1k1o/chromium/Dockerfile.arm .m1k1o/chromium \
-                --build-arg="BASE_IMAGE=mbattista/neko:arm-base" \
-                --platform "linux/arm/v7" \
-                --tag mbattista/neko:arm-chromium; \
+                cd .m1k1o; \
+                sed -i 's/m1k1o/mbattista/g' .env.default
+                ./build arm-base
                 docker push mbattista/neko:arm-chromium
         -
             name: Build firefox dockerfile (with push)
             run: |
-                docker build \
-                --file .m1k1o/firefox/Dockerfile.arm . \
-                --build-arg="BASE_IMAGE=mbattista/neko:arm-base"
-                --tag mbattista/neko:arm-firefox; \
+                cd .m1k1o; \
+                sed -i 's/m1k1o/mbattista/g' .env.default
+                ./build arm-base
                 docker push mbattista/neko:arm-firefox
-
-
 

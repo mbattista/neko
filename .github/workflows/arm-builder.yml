@@ -32,7 +32,7 @@ jobs:
                 --platform=linux/arm/v7,linux/arm64 \
                 --output "type=image,push=true" \
                 --file .m1k1o/base/Dockerfile.arm . \
-                --tag $(echo "${DOCKER_USERNAME}")/neko:arm-base
+                --tag mbattista/neko:arm-base
         -
             name: Build chromium dockerfile (with push)
             run: |
@@ -40,7 +40,7 @@ jobs:
                 --platform=linux/arm/v7,linux/arm64 \
                 --output "type=image,push=true" \
                 --file .m1k1o/chromium/Dockerfile.arm . \
-                --tag $(echo "${DOCKER_USERNAME}")/neko:arm-chromium
+                --tag mbattista/neko:arm-chromium
         -
             name: Build firefox dockerfile (with push)
             run: |
@@ -48,7 +48,7 @@ jobs:
                 --platform=linux/arm/v7,linux/arm64 \
                 --output "type=image,push=true" \
                 --file .m1k1o/firefox/Dockerfile.arm . \
-                --tag $(echo "${DOCKER_USERNAME}")/neko:arm-firefox
+                --tag mbattista/neko:arm-firefox
 
 
 

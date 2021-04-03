@@ -29,7 +29,7 @@ jobs:
             name: Build base dockerfile (with push)
             run: |
                 docker buildx build \
-                --platform=linux/arm/v7,linux/arm64 \
+                --platform=linux/arm/v7 \
                 --output "type=image,push=true" \
                 --file .m1k1o/base/Dockerfile.arm . \
                 --tag mbattista/neko:arm-base
@@ -37,7 +37,7 @@ jobs:
             name: Build chromium dockerfile (with push)
             run: |
                 docker buildx build \
-                --platform=linux/arm/v7,linux/arm64 \
+                --platform=linux/arm/v7 \
                 --output "type=image,push=true" \
                 --file .m1k1o/chromium/Dockerfile.arm . \
                 --tag mbattista/neko:arm-chromium
@@ -45,7 +45,7 @@ jobs:
             name: Build firefox dockerfile (with push)
             run: |
                 docker buildx build \
-                --platform=linux/arm/v7,linux/arm64 \
+                --platform=linux/arm/v7 \
                 --output "type=image,push=true" \
                 --file .m1k1o/firefox/Dockerfile.arm . \
                 --tag mbattista/neko:arm-firefox

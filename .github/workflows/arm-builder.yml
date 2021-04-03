@@ -31,13 +31,13 @@ jobs:
             run: |
                 cd .m1k1o; \
                 sed -i 's/m1k1o/mbattista/g' .env.default; \
-                ./build arm-base; \
+                ./build arm-chromium; \
                 docker push mbattista/neko:arm-chromium
         -
             name: Build firefox dockerfile (with push)
             run: |
                 cd .m1k1o; \
                 sed -i 's/m1k1o/mbattista/g' .env.default; \
-                ./build arm-base; \
+                ./build arm-firefox; \
                 docker push mbattista/neko:arm-firefox
 

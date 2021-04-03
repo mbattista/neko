@@ -31,6 +31,7 @@ jobs:
             run: |
                 docker build \
                 --file .m1k1o/chromium/Dockerfile.arm . \
+                --build-arg="BASE_IMAGE=mbattista/neko:arm-base" \
                 --tag mbattista/neko:arm-chromium; \
                 docker push mbattista/neko:arm-chromium
         -
@@ -38,6 +39,7 @@ jobs:
             run: |
                 docker build \
                 --file .m1k1o/firefox/Dockerfile.arm . \
+                --build-arg="BASE_IMAGE=mbattista/neko:arm-base"
                 --tag mbattista/neko:arm-firefox; \
                 docker push mbattista/neko:arm-firefox
 

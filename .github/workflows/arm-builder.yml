@@ -3,7 +3,7 @@ name: '[builder] CI for releases'
 on:
     push:
         branches:
-            - dev
+            - arm-build
 
 jobs:
     release:

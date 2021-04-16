@@ -2,6 +2,7 @@ package remote
 
 import (
 	"fmt"
+	"os/exec"
 	"time"
 
 	"github.com/kataras/go-events"
@@ -244,7 +245,7 @@ func (manager *RemoteManager) GetScreenSize() *types.ScreenSize {
 }
 
 func (manager *RemoteManager) SetKeyboardLayout(layout string) {
-	xorg.SetKeyboardLayout(layout)
+	exec.Command("setxkbmap", layout).Run()
 }
 
 func (manager *RemoteManager) SetKeyboardModifiers(NumLock int, CapsLock int, ScrollLock int) {

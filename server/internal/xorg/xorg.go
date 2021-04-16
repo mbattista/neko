@@ -13,7 +13,6 @@ import (
 	"sync"
 	"time"
 	"unsafe"
-	"regexp"
 
 	"n.eko.moe/neko/internal/types"
 )
@@ -76,7 +75,7 @@ func KeyDown(code uint64) error {
 
 	debounce_key[code] = time.Now()
 
-	C.XKey(C.ulong(code), C.int(1))
+	C.XKey(C.KeySym(code), C.int(1))
 	return nil
 }
 
@@ -104,7 +103,7 @@ func KeyUp(code uint64) error {
 
 	delete(debounce_key, code)
 
-	C.XKey(C.ulong(code), C.int(0))
+	C.XKey(C.KeySym(code), C.int(0))
 	return nil
 }
 
@@ -209,20 +208,6 @@ func GetScreenSize() *types.ScreenSize {
 	}
 
 	return nil
-}
-
-func SetKeyboardLayout(layout string) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	if !regexp.MustCompile(`^[a-zA-Z]+$`).MatchString(layout) {
-		return
-	}
-
-	layoutUnsafe := C.CString(layout)
-	defer C.free(unsafe.Pointer(layoutUnsafe))
-
-	C.SetKeyboardLayout(layoutUnsafe)
 }
 
 func SetKeyboardModifiers(num_lock int, caps_lock int, scroll_lock int) {

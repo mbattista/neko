@@ -36,11 +36,11 @@ jobs:
         - name: Checkout
           uses: actions/checkout@v2
         - name: Dockerhub login
-            env:
-                DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-                DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-            run: |
-                echo "${DOCKER_PASSWORD}" | docker login --username ${DOCKER_USERNAME} --password-stdin
+          env:
+              DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+              DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          run: |
+              echo "${DOCKER_PASSWORD}" | docker login --username ${DOCKER_USERNAME} --password-stdin
         - name: Build tags
           run: |
             .m1k1o/build ${DOCKER_TAG}

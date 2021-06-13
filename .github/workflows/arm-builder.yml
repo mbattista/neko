@@ -43,7 +43,7 @@ jobs:
               echo "${DOCKER_PASSWORD}" | docker login --username ${DOCKER_USERNAME} --password-stdin
         - name: Build tags
           run: |
-            .m1k1o/build ${DOCKER_TAG}
+            .m1k1o/build pi3-${DOCKER_TAG}
             docker push mbattista/neko:pi3-${DOCKER_TAG}
           env:
             DOCKER_TAG: ${{ matrix.tags }}

@@ -31,7 +31,7 @@ jobs:
         needs: [ release_base ]
         strategy:
           matrix:
-            tags: [firefox, chromium, google-chrome, ungoogled-chromium, tor-browser, vncviewer, vlc, xfce]
+            tags: [firefox, chromium]
         steps:
         - name: Checkout
           uses: actions/checkout@v2

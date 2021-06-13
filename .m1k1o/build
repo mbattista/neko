@@ -52,14 +52,14 @@ build_arm() {
   if [ "$1" = "base" ]
   then
     # build ARM base
-    docker build -t "${BUILD_IMAGE}:arm-base" -f base/Dockerfile.arm "${BASE}"
+    docker build -t "${BUILD_IMAGE}:pi3-base" -f base/Dockerfile.arm "${BASE}"
   elif [ -f "$1/Dockerfile.arm" ]
   then
     # build dedicated ARM image
-    docker build -t "${BUILD_IMAGE}:arm-$1" --build-arg="BASE_IMAGE=${BUILD_IMAGE}:arm-base" -f "$1/Dockerfile.arm" "$1/"
+    docker build -t "${BUILD_IMAGE}:pi3-$1" --build-arg="BASE_IMAGE=${BUILD_IMAGE}:pi3-base" -f "$1/Dockerfile.arm" "$1/"
   else
     # try to build ARM image with common Dockerfile
-    docker build -t "${BUILD_IMAGE}:arm-$1" --build-arg="BASE_IMAGE=${BUILD_IMAGE}:arm-base" -f "$1/Dockerfile" "$1/"
+    docker build -t "${BUILD_IMAGE}:pi3-$1" --build-arg="BASE_IMAGE=${BUILD_IMAGE}:pi3-base" -f "$1/Dockerfile" "$1/"
   fi
 }
 
@@ -68,7 +68,7 @@ case $1 in
   server) build_server;;
 
   # build arm- images
-  arm-*) build_arm "${1#arm-}";;
+  pi3-*) build_arm "${1#pi3-}";;
 
   # build images
   *) build "$1";;

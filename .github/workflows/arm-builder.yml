@@ -25,7 +25,6 @@ jobs:
                 ./build arm-base; \
                 docker push mbattista/neko:arm-base
 
-            
     release:
         runs-on: self-hosted
         if: github.repository_owner == 'mbattista'

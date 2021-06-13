@@ -29,6 +29,7 @@ jobs:
     release:
         runs-on: self-hosted
         if: github.repository_owner == 'mbattista'
+        needs: [ build_base ]
         strategy:
           matrix:
             tags: [pi3-firefox, pi3-chromium, pi3-google-chrome, pi3-ungoogled-chromium, pi3-tor-browser, pi3-vncviewer, pi3-vlc, pi3-xfce]

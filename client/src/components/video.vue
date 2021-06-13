@@ -217,6 +217,7 @@
     private observer = new ResizeObserver(this.onResise.bind(this))
     private focused = false
     private fullscreen = false
+    private startsMuted = true
 
     get admin() {
       return this.$accessor.user.admin
@@ -336,6 +337,7 @@
     onMutedChanged(muted: boolean) {
       if (this._video) {
         this._video.muted = muted
+        this.startsMuted = muted
       }
     }
 
@@ -385,7 +387,7 @@
       this._video.addEventListener('canplaythrough', () => {
         this.$accessor.video.setPlayable(true)
         if (this.autoplay) {
-          if (!document.hasFocus() || !this.$accessor.active) {
+          if (this.startsMuted && (!document.hasFocus() || !this.$accessor.active)) {
             this.$accessor.video.setMuted(true)
             this._video.muted = true
           }
@@ -478,24 +480,40 @@
       this.$accessor.remote.toggle()
     }
 
-    requestFullscreen() {
-      if (typeof this._player.requestFullscreen === 'function') {
-        this._player.requestFullscreen()
+    _elementRequestFullscreen(el: HTMLElement) {
+      if (typeof el.requestFullscreen === 'function') {
+        el.requestFullscreen()
         //@ts-ignore
-      } else if (typeof this._player.webkitRequestFullscreen === 'function') {
+      } else if (typeof el.webkitRequestFullscreen === 'function') {
         //@ts-ignore
-        this._player.webkitRequestFullscreen()
+        el.webkitRequestFullscreen()
         //@ts-ignore
-      } else if (typeof this._player.webkitEnterFullscreen === 'function') {
+      } else if (typeof el.webkitEnterFullscreen === 'function') {
         //@ts-ignore
-        this._player.webkitEnterFullscreen()
+        el.webkitEnterFullscreen()
         //@ts-ignore
-      } else if (typeof this._player.msRequestFullScreen === 'function') {
+      } else if (typeof el.msRequestFullScreen === 'function') {
         //@ts-ignore
-        this._player.msRequestFullScreen()
+        el.msRequestFullScreen()
+      } else {
+        return false
       }
 
-      this.onResise()
+      return true
+    }
+
+    requestFullscreen() {
+      // try to fullscreen player element
+      if (this._elementRequestFullscreen(this._player)) {
+        this.onResise()
+        return
+      }
+
+      // fallback to fullscreen video itself (on mobile devices)
+      if (this._elementRequestFullscreen(this._video)) {
+        this.onResise()
+        return
+      }
     }
 
     requestPictureInPicture() {

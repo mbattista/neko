@@ -42,6 +42,8 @@ For n.eko room management software visit https://github.com/m1k1o/neko-rooms.
 - Added `?cast=1` that will hide all control and show only video.
 - Shake keyboard icon if someone attempted to control when is nobody hosting.
 - Support for password protected `NEKO_ICESERVERS` (by @mbattista).
+- Added bunch of translations (🇸🇰, 🇪🇸, 🇸🇪, 🇳🇴, 🇫🇷) by various people.
+- Added `m1k1o/neko:google-chrome` tag.
 
 ### Bugs
 - Fixed minor gst pipeline bug.
@@ -51,6 +53,11 @@ For n.eko room management software visit https://github.com/m1k1o/neko-rooms.
 - Now when user gets kicked, he won't join as a ghost user again but will be logged out.
 - **iOS compatibility!** Fixed really strange CSS bug, which prevented iOS from loading the video.
 - Proper disconnect only once with unsubscribing events. When webrtc fails, user won't be logged in without username again.
+- Upgraded and fixed emojis to a new major version.
+- Fixed bad `keymap -> keysym` translation to respect active modifiers (#45, with @mbattista).
+- Respecting `NEKO_DEBUG` env variable.
+- Fullscreen support for iOS devices.
+- Added `chrome-sandbox` to fix weird bug when chromium didn't start.
 
 ### Misc
 - Custom docker workflow.
@@ -62,13 +69,15 @@ For n.eko room management software visit https://github.com/m1k1o/neko-rooms.
 - Disable debug mode by default.
 - Remove HTML tags from user name.
 - Upgraded `pion/webrtc` to v3 (by @mbattista).
-- Added `requestFullscreen` compatibility for older browsers.
+- Added `requestFullscreen` compatibility for older browsersn and iOS devices.
 - Fixed small lags in video and improved video UX (by @mbattista).
 - Added `m1k1o/neko:vncviewer` tag, use `NEKO_VNC_URL` to specify VNC target and use n.eko as a bridge.
 - Abiltiy to include neko as a component in another Vue.Js project (by @gbrian).
 - Added HEALTHCHECK to Dockerfile.
 - Arguments in broadcast pipeline are optional, not positional and can be repeated `{url} {device} {display}`.
 - Chat messages are dense, when repeated, they are joined together.
+- While IP address fetching is now proxy ignored.
+- Start unmuted on reconnects.
 
 ### Roadmap & TODOs
 - Catch errors from gst pipeline, tell user if broadcast failed.
@@ -78,6 +87,7 @@ For n.eko room management software visit https://github.com/m1k1o/neko-rooms.
 Use following docker images:
 - `m1k1o/neko:latest` - for Firefox.
 - `m1k1o/neko:chromium` - for Chromium (needs `--cap-add=SYS_ADMIN`).
+- `m1k1o/neko:google-chrome` - for Google Chrome (needs `--cap-add=SYS_ADMIN`).
 - `m1k1o/neko:ungoogled-chromium` - for [Ungoogled Chromium](https://github.com/Eloston/ungoogled-chromium) (needs `--cap-add=SYS_ADMIN`) (by @whalehub).
 - `m1k1o/neko:tor-browser` - for Tor Browser.
 - `m1k1o/neko:vncviewer` - for simple VNC viewer (specify `NEKO_VNC_URL` to your VNC target).
@@ -90,32 +100,153 @@ For ARM-based devices (like Raspberry Pi, with GPU hardware acceleration):
 - `m1k1o/neko:arm-chromium` - for Chromium.
 - `m1k1o/neko:arm-base` - for custom arm based.
 
-Networking:
+### Networking:
 - If you want to use n.eko in **external** network, you can omit `NEKO_NAT1TO1`. It will automatically get your Public IP.
 - If you want to use n.eko in **internal** network, set `NEKO_NAT1TO1` to your local IP address (e.g. `NEKO_NAT1TO1: 192.168.1.20`)-
+- Currenty it is not supported to supply multiple NAT addresses.
 
-Why so many ports?
-- WebRTC needs UDP ports for each channel it creates towards users.
-- Every user will need 2 UDP ports (for getting audio/video and sending mouse positions).
+### Why so many ports?
+- WebRTC needs UDP ports in order to transfer Audio/Video towards user and Mouse/Keyboard events to the server in real time.
+- If you don't set `NEKO_ICELITE=true`, every user will need 2 UDP ports.
+- If you set `NEKO_ICELITE=true`, every user will need only 1 UDP port. It is **recommended** to use *ice-lite*.
+- Do not forget, they are **UDP** ports, that configuraion must be correct in your firewall/router/docker.
 - You can freely limit number of UDP ports. But you can't map them to diferent ports.
   - This **WONT** work: `32000-32100:52000-52100/udp`
 - You can change API port (8080).
   - This **WILL** work: `3000:8080`
 
-Behind reverse proxy?
-- Nginx configuration: https://github.com/nurdism/neko/issues/111#issuecomment-742656957
-- Apache configuration: https://github.com/nurdism/neko/blob/cad98a62a5bd7f1daf2c11980631bb14ba81a1f6/docs/apache-proxypass-config.md#example-apache-config
-- Traefik configuration: https://github.com/m1k1o/neko-vpn/blob/a1b934515dcf597992a515d61d307c2450a11002/docker-compose.yml#L38-L43
+### Behind reverse proxy?
 
-Want to use VPN for your neko browsing?
+<details>
+  <summary>Traefik2 configuration</summary>
+
+  ```yaml
+  labels:
+    - "traefik.enable=true"
+    - "traefik.http.services.neko-frontend.loadbalancer.server.port=8080"
+    - "traefik.http.routers.neko.rule=${TRAEFIK_RULE}"
+    - "traefik.http.routers.neko.entrypoints=${TRAEFIK_ENTRYPOINTS}"
+    - "traefik.http.routers.neko.tls.certresolver=${TRAEFIK_CERTRESOLVER}"
+  ```
+
+  (by @m1k1o, [example](https://github.com/m1k1o/neko-vpn/blob/a1b934515dcf597992a515d61d307c2450a11002/docker-compose.yml#L38-L43))
+</details>
+
+<details>
+  <summary>Nginx configuration</summary>
+
+  ```conf
+  server {
+    listen 443 ssl http2;
+    server_name example.com;
+
+    location / {
+      proxy_pass http://127.0.0.1:8080;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+      proxy_read_timeout 86400;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $remote_addr;
+      proxy_set_header X-Forwarded-Host $host;
+      proxy_set_header X-Forwarded-Port $server_port;
+      proxy_set_header X-Forwarded-Protocol $scheme;
+    }
+  }
+  ```
+
+  (by @GigaFyde, [source](https://github.com/nurdism/neko/issues/111#issuecomment-742656957))
+</details>
+
+<details>
+  <summary>Apache configuration</summary>
+
+  ```xml
+  <VirtualHost *:80>
+    # The ServerName directive sets the request scheme, hostname and port that
+    # the server uses to identify itself. This is used when creating
+    # redirection URLs. In the context of virtual hosts, the ServerName
+    # specifies what hostname must appear in the request's Host: header to
+    # match this virtual host. For the default virtual host (this file) this
+    # value is not decisive as it is used as a last resort host regardless.
+    # However, you must set it for any further virtual host explicitly.
+
+    # Paths of those modules might vary across different distros.
+    LoadModule proxy_module /usr/lib/apache2/modules/mod_proxy.so
+    LoadModule proxy_http_module /usr/lib/apache2/modules/mod_proxy_http.so
+    LoadModule proxy_wstunnel_module /usr/lib/apache2/modules/mod_proxy_wstunnel.so
+
+    ServerName example.com
+    ServerAlias www.example.com
+
+    ProxyRequests Off
+    ProxyPass / http://localhost:8080/
+    ProxyPassReverse / http://localhost:8080/
+
+    RewriteEngine on
+    RewriteCond %{HTTP:Upgrade} websocket [NC]
+    RewriteCond %{HTTP:Connection} upgrade [NC]
+    RewriteRule /ws(.*) "ws://localhost:8080/ws$1" [P,L]
+
+    # Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
+    # error, crit, alert, emerg.
+    # It is also possible to configure the loglevel for particular
+    # modules, e.g.
+    #LogLevel info ssl:warn
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+    # For most configuration files from conf-available/, which are
+    # enabled or disabled at a global level, it is possible to
+    # include a line for only one particular virtual host. For example the
+    # following line enables the CGI configuration for this host only
+    # after it has been globally disabled with "a2disconf".
+    #Include conf-available/serve-cgi-bin.conf
+  </VirtualHost>
+  ```
+
+  (by @DarkReaper231, [source](https://github.com/nurdism/neko/blob/cad98a62a5bd7f1daf2c11980631bb14ba81a1f6/docs/apache-proxypass-config.md#example-apache-config))
+</details>
+
+<details>
+  <summary>Caddy configuration</summary>
+
+  ```conf
+  https://example.com {
+    reverse_proxy localhost:8080 {
+      header_up Host {host}
+      header_up X-Real-IP {remote_host}
+      header_up X-Forwarded-For {remote_host}
+      header_up X-Forwarded-Proto {scheme}
+    }
+  }
+  ```
+
+  (by @ccallahan, [source](https://github.com/nurdism/neko/pull/125/commits/eb4ceda75423b0d960c8aea0240acf6d7a10fef4))
+</details>
+
+### Want to customize and install own addons, set custom bookmarks?
+- You would need to modify existing policy file and mount it to your container.
+- For Firefox, copy [this](https://github.com/m1k1o/neko/blob/dev/.m1k1o/firefox/policies.json) file, modify and mount it as: ` -v '${PWD}/policies.json:/usr/share/firefox-esr/distribution/policies.json'`
+- For Chromium, copy [this](https://github.com/m1k1o/neko/blob/dev/.m1k1o/chromium/policies.json) file, modify and mount it as: ` -v '${PWD}/policies.json:/etc/chromium/policies/managed/policies.json'`
+
+### Want to use VPN for your neko browsing?
 - Check this out: https://github.com/m1k1o/neko-vpn
 
-Accounts:
+### Want to have multiple rooms on demand?
+- Check this out: https://github.com/m1k1o/neko-rooms
+
+### Want to use different Apps than Browser?
+- Check this out: https://github.com/m1k1o/neko-apps
+
+### Accounts:
 - There are no accounts, display name (a.k.a. username) can be freely chosen. Only paword needs to match. Depeding on which password matches, visitor gets its privilege:
   - Anyone, who enters with `NEKO_PASSWORD` will be **user**.
   - Anyone, who enters with `NEKO_PASSWORD_ADMIN` will be **admin**.
 
-Screen size
+### Screen size
 - Only admins can change screen size.
 - You can set default screen size, but this size **MUST** be one from list, that your server supports.
 - You will get this list in frontend, where you can choose from.
@@ -295,4 +426,4 @@ NEKO_ICESERVERS:
 
 # How to contribute?
 
-Navigate to `.m1k1o/README.md` for further information.
+Navigate to [.m1k1o/README.md](.m1k1o/README.md) for further information.

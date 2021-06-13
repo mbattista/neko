@@ -31,7 +31,7 @@ jobs:
         needs: [ release_base ]
         strategy:
           matrix:
-            tags: [pi3-firefox, pi3-chromium, pi3-google-chrome, pi3-ungoogled-chromium, pi3-tor-browser, pi3-vncviewer, pi3-vlc, pi3-xfce]
+            tags: [firefox, chromium, google-chrome, ungoogled-chromium, tor-browser, vncviewer, vlc, xfce]
         steps:
         - name: Checkout
           uses: actions/checkout@v2
@@ -44,7 +44,7 @@ jobs:
         - name: Build tags
           run: |
             .m1k1o/build ${DOCKER_TAG}
-            docker push mbattista/neko:${DOCKER_TAG}
+            docker push mbattista/neko:pi3-${DOCKER_TAG}
           env:
             DOCKER_TAG: ${{ matrix.tags }}
 

@@ -6,38 +6,45 @@ on:
             - github-actions
 
 jobs:
-    release:
+    release_base:
         runs-on: self-hosted
+        if: github.repository_owner == 'mbattista'
         steps:
-        -
-            name: Checkout
-            uses: actions/checkout@v1
-        -
-            name: Dockerhub login
+          - name: Checkout
+            uses: actions/checkout@v2
+          - name: Dockerhub login
             env:
                 DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
                 DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 echo "${DOCKER_PASSWORD}" | docker login --username ${DOCKER_USERNAME} --password-stdin
-        -
-            name: Build base dockerfile (with push)
+          - name: Build base dockerfile (with push)
             run: |
                 cd .m1k1o; \
                 sed -i 's/m1k1o/mbattista/g' .env.default; \
                 ./build arm-base; \
                 docker push mbattista/neko:arm-base
-        -
-            name: Build chromium dockerfile (with push)
+
+            
+    release:
+        runs-on: self-hosted
+        if: github.repository_owner == 'mbattista'
+        strategy:
+          matrix:
+            tags: [pi3-firefox, pi3-chromium, pi3-google-chrome, pi3-ungoogled-chromium, pi3-tor-browser, pi3-vncviewer, pi3-vlc, pi3-xfce]
+        steps:
+        - name: Checkout
+          uses: actions/checkout@v2
+        - name: Dockerhub login
+            env:
+                DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+                DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
             run: |
-                cd .m1k1o; \
-                sed -i 's/m1k1o/mbattista/g' .env.default; \
-                ./build arm-chromium; \
-                docker push mbattista/neko:arm-chromium
-        -
-            name: Build firefox dockerfile (with push)
-            run: |
-                cd .m1k1o; \
-                sed -i 's/m1k1o/mbattista/g' .env.default; \
-                ./build arm-firefox; \
-                docker push mbattista/neko:arm-firefox
+                echo "${DOCKER_PASSWORD}" | docker login --username ${DOCKER_USERNAME} --password-stdin
+        - name: Build tags
+          run: |
+            .m1k1o/build ${DOCKER_TAG}
+            docker push mbattista/neko:${DOCKER_TAG}
+          env:
+            DOCKER_TAG: ${{ matrix.tags }}
 

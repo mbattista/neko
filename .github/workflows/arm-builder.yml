@@ -22,8 +22,8 @@ jobs:
             run: |
                 cd .m1k1o; \
                 sed -i 's/m1k1o/mbattista/g' .env.default; \
-                ./build arm-base; \
-                docker push mbattista/neko:arm-base
+                ./build pi3-base; \
+                docker push mbattista/neko:pi3-base
 
     release:
         runs-on: self-hosted
